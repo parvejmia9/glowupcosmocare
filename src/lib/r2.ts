@@ -16,7 +16,7 @@ function r2Endpoint() {
   return `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${process.env.R2_BUCKET_NAME}`;
 }
 
-const R2_PREFIX = "webclient/glowupcosmocare/uploads/";
+const R2_PREFIX = "glowupcosmocare/uploads/";
 
 async function r2Upload(key: string, buffer: Buffer, contentType: string): Promise<string> {
   const fullKey = `${R2_PREFIX}${key}`;
