@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: glowupcosmocare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: glowup
+      POSTGRES_PASSWORD: changeme
+      POSTGRES_DB: glowupcosmocare-db
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: glowupcosmocare-app
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql://glowup:changeme@db:5432/glowupcosmocare-db?schema=public"
+      SESSION_SECRET: "glowup-cosmocare-secret-key-change-in-production-32chars"
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+      R2_ACCOUNT_ID: "your-account-id"
+      R2_ACCESS_KEY_ID: "your-access-key-id"
+      R2_SECRET_ACCESS_KEY: "your-secret-access-key"
+      R2_BUCKET_NAME: "web-projects"
+      R2_PUBLIC_URL: "https://pub-xxx.r2.dev"
+
+volumes:
+  pgdata:

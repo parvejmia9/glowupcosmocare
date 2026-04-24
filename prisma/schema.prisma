@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Admin {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("admins")
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id            Int              @id @default(autoincrement())
+  name          String
+  slug          String           @unique
+  description   String           @default("")
+  badge         String?
+  categoryId    Int?             @map("category_id")
+  brandName     String           @default("") @map("brand_name")
+  isActive      Boolean          @default(true) @map("is_active")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  category      Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images        ProductImage[]
+  variants      ProductVariant[]
+  orderItems    OrderItem[]
+
+  @@map("products")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int     @map("product_id")
+  imagePath String  @map("image_path")
+  sortOrder Int     @default(0) @map("sort_order")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model ProductVariant {
+  id         Int         @id @default(autoincrement())
+  productId  Int         @map("product_id")
+  size          String
+  price         Float       @default(0)
+  discountPrice Float?      @map("discount_price")
+  stockCount    Int         @default(0) @map("stock_count")
+  sku           String      @default("")
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@unique([productId, size])
+  @@map("product_variants")
+}
+
+enum DeliveryZone {
+  inside_dhaka
+  outside_dhaka
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  shipped
+  delivered
+  returned
+  declined
+}
+
+model Order {
+  id             Int          @id @default(autoincrement())
+  orderNumber    String       @unique @map("order_number")
+  fullName       String       @map("full_name")
+  mobile         String
+  address        String
+  city           String
+  deliveryZone   DeliveryZone @map("delivery_zone")
+  deliveryCharge Float        @map("delivery_charge")
+  subtotal       Float
+  total          Float
+  status         OrderStatus  @default(pending)
+  orderNotes     String       @default("") @map("order_notes")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  items          OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int     @id @default(autoincrement())
+  orderId     Int     @map("order_id")
+  productId   Int     @map("product_id")
+  variantId   Int     @map("variant_id")
+  productName String  @map("product_name")
+  size        String
+  unitPrice   Float   @map("unit_price")
+  quantity    Int
+
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product        @relation(fields: [productId], references: [id])
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+model SiteSetting {
+  key   String @id
+  value String
+
+  @@map("site_settings")
+}
