@@ -6,7 +6,7 @@ import { useCart } from "@/lib/cart-context";
 import { usePathname, useSearchParams } from "next/navigation";
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }

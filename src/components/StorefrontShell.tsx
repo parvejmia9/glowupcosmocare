@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
 
 interface Category {
-  id: string;
+  id: number;
   name: string;
   slug: string;
 }
