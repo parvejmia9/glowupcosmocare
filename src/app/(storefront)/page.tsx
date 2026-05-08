@@ -2,12 +2,14 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import Image from "next/image";
 import HeroCarousel from "@/components/HeroCarousel";
 import ProductCard from "@/components/ProductCard";
 import TrustBadges from "@/components/TrustBadges";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import Testimonials from "@/components/Testimonials";
+import Pagination from "@/components/Pagination";
+
+const PRODUCTS_PER_PAGE = 12;
 
 async function getHeroImages(): Promise<string[]> {
   const settings = await prisma.siteSetting.findMany({
@@ -40,17 +42,40 @@ async function getFeaturedProducts() {
     .filter((p): p is NonNullable<typeof p> => !!p);
 }
 
-async function getAboutText(): Promise<string> {
-  const s = await prisma.siteSetting.findUnique({ where: { key: "about_text" } });
-  return s?.value || "";
-}
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ page?: string; category?: string }> }) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page || "1", 10) || 1);
+  const categorySlug = params.category || "";
 
-export default async function HomePage() {
-  const [heroImages, featured, aboutText] = await Promise.all([
+  const categories = await prisma.category.findMany({ orderBy: { sortOrder: "asc" } });
+  const selectedCategory = categorySlug
+    ? categories.find((c) => c.slug === categorySlug)
+    : null;
+
+  const productWhere = {
+    isActive: true,
+    ...(selectedCategory ? { categoryId: selectedCategory.id } : {}),
+  };
+
+  const [heroImages, featured, totalCount, allProducts] = await Promise.all([
     getHeroImages(),
     getFeaturedProducts(),
-    getAboutText(),
+    prisma.product.count({ where: productWhere }),
+    prisma.product.findMany({
+      where: productWhere,
+      include: {
+        images: { where: { isPrimary: true }, take: 1 },
+        variants: { orderBy: { price: "asc" } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PRODUCTS_PER_PAGE,
+      take: PRODUCTS_PER_PAGE,
+    }),
   ]);
+
+  const totalPages = Math.ceil(totalCount / PRODUCTS_PER_PAGE);
+  const paginationParams: Record<string, string> = {};
+  if (categorySlug) paginationParams.category = categorySlug;
 
   return (
     <div>
@@ -80,7 +105,7 @@ export default async function HomePage() {
       <TrustBadges />
 
       {/* Why GlowUp */}
-      <WhyChooseUs />
+      {/* <WhyChooseUs /> */}
 
       {/* Featured Products */}
       {featured.length > 0 && (
@@ -110,41 +135,52 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* All Products / Category Products */}
+      <section id="products" className="py-16 sm:py-20 scroll-mt-36">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3" style={{ fontFamily: "'Georgia', serif" }}>
+              {selectedCategory ? selectedCategory.name : "All Products"}
+            </h2>
+            {selectedCategory && (
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-pink-100 text-pink-700 text-sm font-medium rounded-full">
+                  {selectedCategory.name}
+                  <Link href="/#products" className="hover:text-pink-900 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </Link>
+                </span>
+              </div>
+            )}
+          </div>
+          {allProducts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+                {allProducts.map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    id={p.id}
+                    name={p.name}
+                    slug={p.slug}
+                    minPrice={(() => { const v = p.variants[0]; return v ? (v.discountPrice && v.discountPrice > 0 ? v.discountPrice : v.price) : 0; })()}
+                    badge={p.badge}
+                    brandName={p.brandName}
+                    primaryImage={p.images[0]?.imagePath || null}
+                  />
+                ))}
+              </div>
+              <Pagination currentPage={page} totalPages={totalPages} basePath="/" searchParams={paginationParams} />
+            </>
+          ) : (
+            <p className="text-center text-gray-500">No products found in this category.</p>
+          )}
+        </div>
+      </section>
+
       {/* Testimonials */}
       <Testimonials />
-
-      {/* Our Story / About — split layout */}
-      {aboutText && (
-        <section className="py-16 sm:py-20 bg-gradient-to-br from-pink-50 via-white to-pink-50/30">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-pink-100">
-                <Image
-                  src={heroImages[0] || "/placeholder.png"}
-                  alt="Our Story"
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
-              <div>
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: "'Georgia', serif" }}>
-                  Hello! <span className="text-gray-900">This is <span className="font-extrabold">glowupcosmocare</span> —</span>
-                </h2>
-                <div className="text-gray-600 leading-relaxed whitespace-pre-line mt-4 text-[15px]">
-                  {aboutText.length > 300 ? aboutText.slice(0, 300) + "..." : aboutText}
-                </div>
-                <Link
-                  href="/shop"
-                  className="inline-block mt-6 px-8 py-3 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-full text-sm transition-all shadow-md hover:shadow-lg"
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }

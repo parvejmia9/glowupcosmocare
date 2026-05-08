@@ -3,15 +3,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
-export default function Navbar() {
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export default function Navbar({ categories }: { categories: Category[] }) {
   const { items, setCartOpen } = useCart();
   const count = items.reduce((sum, i) => sum + i.qty, 0);
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentCategory = searchParams.get("category") || "";
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-pink-100/60 shadow-sm">
+      {/* Main row */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[72px]">
           <Link href="/" className="flex items-center gap-2 shrink-0">
@@ -21,11 +30,7 @@ export default function Navbar() {
             <Link
               href="/"
               className={`relative text-[15px] font-medium transition-colors duration-200 ${pathname === "/" ? "text-pink-600" : "text-gray-600 hover:text-pink-600"} after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:bg-pink-500 after:transition-all after:duration-300 ${pathname === "/" ? "after:w-full" : "after:w-0 hover:after:w-full"}`}
-            >Our Story</Link>
-            <Link
-              href="/shop"
-              className={`relative text-[15px] font-medium transition-colors duration-200 ${pathname === "/shop" ? "text-pink-600" : "text-gray-600 hover:text-pink-600"} after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:bg-pink-500 after:transition-all after:duration-300 ${pathname === "/shop" ? "after:w-full" : "after:w-0 hover:after:w-full"}`}
-            >Shop</Link>
+            >Home</Link>
             <button
               onClick={() => setCartOpen(true)}
               className="relative p-2 rounded-full text-gray-600 hover:text-pink-600 hover:bg-pink-50 transition-all duration-200"
@@ -42,6 +47,35 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Category bar */}
+      {categories.length > 0 && (
+        <div className="border-t border-pink-100/40 bg-white/60">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap gap-2 py-2.5">
+              <Link
+                href="/#products"
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 bg-pink-50 text-gray-600 hover:bg-pink-100 hover:text-pink-700`}
+              >
+                All
+              </Link>
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/?category=${cat.slug}#products`}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap ${
+                    currentCategory === cat.slug
+                      ? "bg-pink-600 text-white shadow-sm"
+                      : "bg-pink-50 text-gray-600 hover:bg-pink-100 hover:text-pink-700"
+                  }`}
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

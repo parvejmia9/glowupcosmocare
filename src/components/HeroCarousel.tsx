@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 interface HeroCarouselProps {
   images: string[];
@@ -36,36 +35,8 @@ export default function HeroCarousel({ images }: HeroCarouselProps) {
       ))}
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/25 to-transparent" />
 
-      {/* Hero content */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 w-full">
-          <div className="max-w-xl">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4 drop-shadow-lg" style={{ fontFamily: "'Georgia', serif" }}>
-              Glow naturally.<br />
-              Feel beautiful every day.
-            </h1>
-            <p className="text-base sm:text-lg text-white/90 mb-8 drop-shadow">
-              High-performance skincare designed for real results.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href="/shop"
-                className="px-8 py-3.5 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-full text-sm transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              >
-                Shop Best Sellers
-              </Link>
-              <Link
-                href="/shop"
-                className="px-8 py-3.5 border-2 border-white text-white font-semibold rounded-full text-sm hover:bg-white hover:text-gray-900 transition-all duration-300"
-              >
-                Explore Collection
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Hero content removed */}
 
       {/* Carousel controls */}
       {count > 1 && (

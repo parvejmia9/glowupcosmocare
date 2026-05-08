@@ -1,21 +1,32 @@
-import Link from "next/link";
 import Image from "next/image";
 
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-400 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="flex flex-col sm:flex-row justify-between gap-10">
+        <div className="flex flex-col sm:flex-row justify-between gap-10 sm:gap-0">
           {/* Brand */}
-          <div>
+          <div className="sm:flex-1 sm:pr-10">
             <Image src="/glowupcosmocare logo.png" alt="GlowUp CosmoCare" width={140} height={40} className="h-10 mb-4 brightness-200" style={{ width: 'auto' }} />
             <p className="text-sm leading-relaxed text-gray-400">
-              Your trusted beauty partner. Premium skincare designed for real results.
+              Your trusted beauty partner.<br />
+              Premium skincare designed for real results.
             </p>
           </div>
 
+          {/* Vertical line */}
+          <div className="hidden sm:block w-px bg-gray-700 self-stretch" />
+
+          {/* Address (center) */}
+          <div className="sm:flex-1 sm:px-10 flex flex-col items-center justify-center text-center">
+            <p className="text-sm text-gray-400">House 10, Road 07, Gulshan 1, Dhaka 1212</p>
+          </div>
+
+          {/* Vertical line */}
+          <div className="hidden sm:block w-px bg-gray-700 self-stretch" />
+
           {/* Contact */}
-          <div>
+          <div className="sm:flex-1 sm:pl-10">
             <h4 className="text-white font-semibold text-sm mb-4 tracking-wide uppercase">Contact Us</h4>
             <ul className="space-y-3">
               <li>
@@ -27,11 +38,11 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:rashed.vit@gmail.com" className="flex items-center gap-2 text-sm hover:text-pink-400 transition-colors">
+                <a href="mailto:glowupcosc@gmail.com" className="flex items-center gap-2 text-sm hover:text-pink-400 transition-colors">
                   <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  rashed.vit@gmail.com
+                  glowupcosc@gmail.com
                 </a>
               </li>
               <li>
@@ -47,7 +58,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-gray-800 mt-10 pt-8 flex items-center justify-center">
+        <div className="mt-6 pt-6 flex items-center justify-center">
           <p className="text-sm text-gray-500">&copy; {new Date().getFullYear()} GlowUp CosmoCare. All rights reserved.</p>
         </div>
       </div>
