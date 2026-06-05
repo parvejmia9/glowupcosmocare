@@ -14,7 +14,7 @@ export default async function OrderDetailPage({
 
   const order = await prisma.order.findUnique({
     where: { id: Number(id) },
-    include: { items: { include: { product: { select: { slug: true } } } } },
+    include: { items: { include: { product: { select: { slug: true } }, variant: { select: { sku: true } } } } },
   });
 
   if (!order) notFound();
@@ -56,6 +56,7 @@ export default async function OrderDetailPage({
           <thead className="bg-gray-50 border-b">
             <tr>
               <th className="text-left px-4 py-3 font-semibold">Product</th>
+              <th className="text-left px-4 py-3 font-semibold">SKU</th>
               <th className="text-left px-4 py-3 font-semibold">Size</th>
               <th className="text-left px-4 py-3 font-semibold">Price</th>
               <th className="text-left px-4 py-3 font-semibold">Qty</th>
@@ -68,6 +69,7 @@ export default async function OrderDetailPage({
                 <td className="px-4 py-3 font-medium">
                   <Link href={`/product/${item.product.slug}`} className="text-pink-600 hover:underline">{item.productName}</Link>
                 </td>
+                <td className="px-4 py-3 text-gray-500">{item.variant?.sku || "—"}</td>
                 <td className="px-4 py-3">{item.size}</td>
                 <td className="px-4 py-3">৳{item.unitPrice.toLocaleString()}</td>
                 <td className="px-4 py-3">{item.quantity}</td>
@@ -81,6 +83,7 @@ export default async function OrderDetailPage({
             <div key={item.id} className="p-4">
               <Link href={`/product/${item.product.slug}`} className="font-medium text-sm text-pink-600 hover:underline">{item.productName}</Link>
               <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                {item.variant?.sku && <span>SKU: {item.variant.sku}</span>}
                 <span>Size: {item.size}</span>
                 <span>Qty: {item.quantity}</span>
               </div>
